@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name" translatable="false">BMW Barcode Scanner</string>
+    <string name="header_text" translatable="false">Barcode Scanner for BMW Bags</string>
+    <string name="barcode_label">Ready to Scan</string>
+    <string name="weight_label">Enter Weight Above</string>
+    <string name="weight_hint">Enter Weight</string>
+    <string name="default_barcode" translatable="false">000000000000000</string>
+    <string name="submit">Submit Record</string>
+    <string name="list_records">Show Records</string>
+    <string name="list_batch">Show Batch</string>
+    <string name="scan_first">Please Scan Barcode First</string>
+    <string name="invalid_weight">Invalid weight Entered</string>
+    <string name="data_added">Data added to the Database</string>
+    <string name="data_updated">Data updated</string>
+    <string name="data_deleted">Record successfully deleted</string>
+    <string name="data_failed">Failed to add Data</string>
+    <string name="delete_batch">Delete Batch</string>
+    <string name="deleteBatchMessage">Batch deleted</string>
+    <string name="back">Back</string>
+    <string name="update">Update</string>
+    <string name="sync">Sync</string>
+    <string name="bagcount">Number</string>
+    <string name="bag_color">Bag Color</string>
+    <string name="total_weight">Total Weight</string>
+    <string name="colorChar_label">Character Number for Color</string>
+    <string name="barcodeLength_label">Barcode Length</string>
+    <string name="deleteAll_label">Delete all records</string>
+    <string name="deleteAll_alertHead">Delete all records</string>
+    <string name="deleteAll_alert">Do you want to Delete all records?</string>
+    <string name="serverurl_label">Server URL</string>
+    <string name="macid_label">Machine Identifier</string>
+    <string name="scanBarcodeLabel">SCAN NOW</string>
+    <string name="setBarcodeWindow">Please set the barcode in the center of the above window</string>
+    <string name="cameraPermissionMessage">Camera Permission Denied</string>
+    <string name="appExpired">BMW Barcode Scanner app has expired</string>
+    <string name="nwError">Network Error -- Check Network Settings</string>
+    <string name="deleteAllMessage">All records deleted</string>
+    <string name="bError">Please ckeck barcode value</string>
+</resources>

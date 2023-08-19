@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity"
+    android:layout_margin="0dp">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="7"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/barcodeValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:background="#fff"
+            android:text="@string/default_barcode"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textSize="35sp" />
+
+        <Button
+            android:id="@+id/btn_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/barcodeValue"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="30dp"
+            android:text="@string/scanBarcodeLabel"
+            android:textSize="30dp" />
+
+        <EditText
+            android:id="@+id/kg_number"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/btn_scan"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:inputType="numberDecimal|textNoSuggestions"
+            android:selectAllOnFocus="true"
+            android:hint="00.000"
+            android:autofillHints="@string/weight_hint"
+            android:textAlignment="center"
+            android:theme="@style/weightBoxTheme" />
+
+        <TextView
+            android:id="@+id/weightmsg"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_below="@id/kg_number"
+            android:layout_marginTop="5dp"
+            android:paddingLeft="10dp"
+            android:paddingTop="1dp"
+            android:text="@string/weight_label"
+            android:textAlignment="center"
+            android:textSize="20sp" />
+        <!--region Description
+        Weight display text view
+        -->
+
+        <!--<LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kg"
+                android:theme="@style/weightBoxTheme" />
+
+            <EditText
+                android:id="@+id/kg_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00"
+                android:theme="@style/weightBoxTheme" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="."
+                android:textSize="24sp" />
+
+            <EditText
+                android:id="@+id/gm_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="000"
+                android:theme="@style/weightBoxTheme" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="gm"
+                android:theme="@style/weightBoxTheme" />
+        </LinearLayout>-->
+        <!--endregion-->
+        <TextView
+            android:id="@+id/messageBar"
+            android:layout_width="300dp"
+            android:layout_height="35dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="30dp"
+            android:text="@string/barcode_label"
+            android:textAlignment="center"
+            android:textSize="25sp" />
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="2"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/submit"
+            android:textSize="15dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:theme="@style/buttonTheme">
+
+            <Button
+                android:id="@+id/btn_list_batch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/list_batch"
+                android:theme="@style/buttonTheme" />
+
+            <Button
+                android:id="@+id/btn_list_records"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/list_records"
+                android:theme="@style/buttonTheme" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

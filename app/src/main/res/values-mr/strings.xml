@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scan_first">बारकोड नाही वाचले गेले</string>
+    <string name="invalid_weight">वजन चुकीचं आहे</string>
+    <string name="data_added">रेकॉर्ड ऍड झ्हाले</string>
+    <string name="data_failed">रेकॉर्ड ऍड नाही झ्हाले</string>
+    <string name="delete_batch">बॅच हटवा</string>
+    <string name="back">मागे जा</string>
+    <string name="colorChar_label">रंग दाखवणाऱ्या वर्ण ची जागा</string>
+    <string name="barcodeLength_label">बारकोड ची लांबी</string>
+    <string name="total_weight">एकूण वजन</string>
+    <string name="deleteAll_label">सर्व रेकॉर्ड हटवा</string>
+    <string name="weight_label" translatable="false">वजन प्रविष्ट करा</string>
+    <string name="list_records">रेकॉर्ड दर्शवा</string>
+    <string name="list_batch">बॅच दाखवा</string>
+    <string name="weight_hint">वजन प्रविष्ट करा</string>
+    <string name="submit">रेकॉर्ड सबमिट करा</string>
+    <string name="bag_color">पिशवीचा रंग</string>
+    <string name="bagcount">संख्या</string>
+    <string name="barcode_label">स्कॅन करण्यास सज्ज</string>
+    <string name="serverurl_label">सर्व्हर URL</string>
+    <string name="macid_label">मशीन अभिज्ञापक</string>
+    <string name="update">अद्यतनित करा</string>
+    <string name="sync">समक्रमित करा</string>
+    <string name="scanBarcodeLabel">स्कॅन करा</string>
+    <string name="deleteAll_alert">आपण सर्व रेकॉर्ड हटवू इच्छिता?</string>
+    <string name="deleteAll_alertHead">सर्व रेकॉर्ड हटवा</string>
+    <string name="setBarcodeWindow">कृपया वरील विंडोच्या मध्यभागी बारकोड सेट करा</string>
+    <string name="cameraPermissionMessage">कॅमेर्‍याची परवानगी नाकारली</string>
+    <string name="data_updated">डेटा अद्यतनित केला</string>
+    <string name="data_deleted">रेकॉर्ड यशस्वीरित्या हटविला</string>
+    <string name="appExpired">अ‍ॅप कालबाह्य झाले आहे</string>
+    <string name="nwError">नेटवर्क त्रुटी - नेटवर्क सेटिंग्ज तपासा</string>
+    <string name="deleteAllMessage">सर्व रेकॉर्ड हटविली</string>
+    <string name="deleteBatchMessage">बॅच हटविला</string>
+</resources>

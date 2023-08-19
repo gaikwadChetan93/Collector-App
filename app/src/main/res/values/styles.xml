@@ -1,0 +1,42 @@
+<resources>
+
+    <!-- Base application theme. -->
+     <!-- <style name="AppTheme" parent="Theme.AppCompat.Light"> -->
+         <!-- Customize your theme here.
+        <item name="colorPrimary">#FF9800</item>
+        <item name="colorPrimaryDark">#FF5722</item>
+        <item name="colorAccent">#FFC107</item>
+        <item name="colorSecondary">#FFC107</item>
+        <item name="colorButtonNormal">#FF9800</item>
+    </style> -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#03A9F4</item>
+        <item name="colorPrimaryDark">#2196F3</item>
+        <item name="colorAccent">#00BCD4</item>
+        <item name="colorSecondary">#009688</item>
+        <item name="colorButtonNormal">#3F51B5</item>
+        <item name="colorPrimaryVariant">#000000</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondaryVariant">#0039CB</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorError">#F44336</item>
+        <item name="colorOnError">#FFFFFF</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#212121</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">#212121</item>
+    </style>
+    <color name="background">#FAFAFA</color>
+
+    <style name="weightBoxTheme" parent="AppTheme">
+        <item name="android:textSize">30sp</item>
+        <item name="android:layout_margin">20dp</item>
+    </style>
+    <style name="buttonTheme" parent="AppTheme">
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_marginLeft">2dp</item>
+        <item name="android:layout_marginRight">2dp</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+    </style>
+
+</resources>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/serverUrl_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/serverurl_label"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/serverUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="http://www.greenearthnetwork.in/app_data.php"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/macid_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/macid_label"
+                android:textSize="18sp"
+                />
+
+            <TextView
+                android:id="@+id/macid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/macid_label"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="25sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/barcodesize_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/barcodeLength_label"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/barcodesize"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Size of Barcode (chars)"
+                android:inputType="number"
+                android:textSize="18sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/colorplace_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/colorChar_label"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/colorplace"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:hint="Place of Color Character"
+                android:inputType="number"
+                android:textSize="18sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnDeleteAll"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:onClick="deleterecords"
+                android:text="@string/deleteAll_label"
+                android:theme="@style/buttonTheme" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
+        android:theme="@style/buttonTheme">
+
+        <Button
+            android:id="@+id/btnSettingsUpdate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="update"
+            android:text="@string/update"
+            android:theme="@style/buttonTheme" />
+
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/back"
+            android:theme="@style/buttonTheme" />
+    </LinearLayout>
+
+
+</LinearLayout>
