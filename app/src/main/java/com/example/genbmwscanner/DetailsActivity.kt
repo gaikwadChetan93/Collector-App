@@ -25,7 +25,7 @@ class DetailsActivity : AppCompatActivity() {
 
         /* Check  if activity opened from List Item Click */
         if(intent.hasExtra("id")){
-            modifyId = intent.getStringExtra("id")
+            modifyId = intent.getStringExtra("id").toString()
             barcodeEditText.setText(intent.getStringExtra("barcode"))
             weightEditText.setText(intent.getStringExtra("weight"))
             timeEditText.setText(intent.getStringExtra("recordtime"))

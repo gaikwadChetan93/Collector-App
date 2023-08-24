@@ -6,6 +6,7 @@
     <string name="weight_hint">Enter Weight</string>
     <string name="default_barcode" translatable="false">000000000000000</string>
     <string name="submit">Submit Record</string>
+    <string name="conect_scale">Connect Scale</string>
     <string name="list_records">Show Records</string>
     <string name="list_batch">Show Batch</string>
     <string name="scan_first">Please Scan Barcode First</string>

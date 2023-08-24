@@ -1,8 +1,12 @@
 package com.example.genbmwscanner
 
 //import android.R
+
 import android.Manifest
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,10 +15,13 @@ import android.icu.text.SimpleDateFormat
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
@@ -22,6 +29,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.zxing.integration.android.IntentIntegrator
@@ -34,12 +42,11 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -52,19 +59,35 @@ class MainActivity : AppCompatActivity() {
     var macid = ""
     var bsize = 0
     var colorPlace = 0
+
     //var serverUrl = "https://www.greenearthnetwork.in/app_data.php"
     var serverUrl = "https://aurangabad.greenearthnetwork.in/app_data.php"
+    private val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+    private val dev: BluetoothDevice? = null
+    private var sockFallback: BluetoothSocket? = null
     //var serverUrl = "https://doctors2.envirovigil.org/app_data.php"
     var popMessage = "Ready"
-    var camera:Boolean = false
+    var camera: Boolean = false
+    lateinit var bleAddress: String
 
+    var mBluetoothAdapter: BluetoothAdapter? = null
+    var mmSocket: BluetoothSocket? = null
+    var mmDevice: BluetoothDevice? = null
+    var mmOutputStream: OutputStream? = null
+    var mmInputStream: InputStream? = null
+    var workerThread: Thread? = null
+    lateinit var readBuffer: ByteArray
+    var readBufferPosition = 0
+    var counter = 0
 
+    @Volatile
+    var stopWorker = false
+    lateinit var vKG:EditText
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
+        checkBluetoothPermission()
 
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -75,8 +98,11 @@ class MainActivity : AppCompatActivity() {
 
         val messageBar = findViewById<TextView>(R.id.messageBar)
 
-        val vKG = findViewById(R.id.kg_number) as EditText
+         vKG = findViewById<EditText>(R.id.kg_number)
 
+        findViewById<Button>(R.id.btn_Scale).setOnClickListener {
+            getAllDeviceAddress()
+        }
         //Connect to the database
         val cursor = dbHandler.getSettings()
         cursor!!.moveToFirst()
@@ -91,11 +117,11 @@ class MainActivity : AppCompatActivity() {
         colorPlace = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_9)).toInt()
 
         btn_scan.setOnClickListener {
-            if (setupPermissions()){
-            val scanner = IntentIntegrator(this)
-            scanner.setPrompt(getString(R.string.setBarcodeWindow))
-            scanner.initiateScan()
-            } else{
+            if (setupPermissions()) {
+                val scanner = IntentIntegrator(this)
+                scanner.setPrompt(getString(R.string.setBarcodeWindow))
+                scanner.initiateScan()
+            } else {
                 popMessage = getString(R.string.cameraPermissionMessage)
                 setToast(popMessage)
             }
@@ -109,31 +135,31 @@ class MainActivity : AppCompatActivity() {
                 KG = "0.0".toFloat()
                 popMessage = "Weight is 0"
             }
-                weight = "%.3f".format(KG.toFloat()).toString()
-                //recordtime = LocalDateTime.now().toString()
-                val curtime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                recordtime = curtime.format(Date()).toString()
-                /*val parsedDate = LocalDateTime.parse(recordtime, DateTimeFormatter.ISO_DATE_TIME)
-                val formattedDate = parsedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) */
-                bagcolor = scannedBarcodeValue[colorPlace-1].toString()
-                if ((scannedBarcodeValue != "000000000000000") && (scannedBarcodeValue != "") && (scannedBarcodeValue.length == bsize)) {
-                    dbHandler.insertRow(
-                        scannedBarcodeValue,
-                        weight,
-                        recordtime,
-                        bagcolor,
-                        macid
-                    )
+            weight = "%.3f".format(KG.toFloat()).toString()
+            //recordtime = LocalDateTime.now().toString()
+            val curtime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            recordtime = curtime.format(Date()).toString()
+            /*val parsedDate = LocalDateTime.parse(recordtime, DateTimeFormatter.ISO_DATE_TIME)
+            val formattedDate = parsedDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) */
+            bagcolor = scannedBarcodeValue[colorPlace - 1].toString()
+            if ((scannedBarcodeValue != "000000000000000") && (scannedBarcodeValue != "") && (scannedBarcodeValue.length == bsize)) {
+                dbHandler.insertRow(
+                    scannedBarcodeValue,
+                    weight,
+                    recordtime,
+                    bagcolor,
+                    macid
+                )
 
-                    var sendStat = send()
-                    if (sendStat == 0) {
-                        popMessage = getString(R.string.data_added)
-                    } else {
-                        popMessage = getString(R.string.data_failed)
-                    }
+                var sendStat = send()
+                if (sendStat == 0) {
+                    popMessage = getString(R.string.data_added)
                 } else {
-                    popMessage = getString(R.string.scan_first)
+                    popMessage = getString(R.string.data_failed)
                 }
+            } else {
+                popMessage = getString(R.string.scan_first)
+            }
             vKG.setText("")
             //displayBarcode("000000000000000");
             setToast(popMessage)
@@ -177,15 +203,14 @@ class MainActivity : AppCompatActivity() {
 
         if (Today.compareTo(Future) <= 0) {
             println("earlier")
-        }
-        else{
+        } else {
             val builder = AlertDialog.Builder(this)
             with(builder)
             {
                 setTitle("Account Expired")
                 setMessage(getString(R.string.appExpired))
                 setCancelable(false)
-                setPositiveButton("OK"){dialogInterface, which ->
+                setPositiveButton("OK") { dialogInterface, which ->
                     finish()
                 }
                 //setNegativeButton(android.R.string.no, null)
@@ -198,25 +223,25 @@ class MainActivity : AppCompatActivity() {
 
         /*var Today = LocalDateTime.now().toLocalDate().toEpochDay().toInt()
         var Future = LocalDate.parse("2020-05-31").toEpochDay().toInt()*/
-/*
-        var dateDiff = Future - Today
-        if (dateDiff < 1){
-                val builder = AlertDialog.Builder(this)
-                with(builder)
-                {
-                    setTitle("Account Expired")
-                    setMessage(getString(R.string.appExpired))
-                    setCancelable(false)
-                    setPositiveButton("OK"){dialogInterface, which ->
-                        finish()
-                    }
-                    //setNegativeButton(android.R.string.no, null)
-                    //setNeutralButton("Maybe", null)
-                    create()
-                    show()
+        /*
+                var dateDiff = Future - Today
+                if (dateDiff < 1){
+                        val builder = AlertDialog.Builder(this)
+                        with(builder)
+                        {
+                            setTitle("Account Expired")
+                            setMessage(getString(R.string.appExpired))
+                            setCancelable(false)
+                            setPositiveButton("OK"){dialogInterface, which ->
+                                finish()
+                            }
+                            //setNegativeButton(android.R.string.no, null)
+                            //setNeutralButton("Maybe", null)
+                            create()
+                            show()
+                        }
                 }
-        }
-*/
+        */
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -252,17 +277,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun displayBarcode(barcode: String) {
+        vKG.setText(weight)
         val barView = findViewById(R.id.barcodeValue) as TextView
         scannedBarcodeValue = barcode.toString()
         barView.text = scannedBarcodeValue
-        bagcolor = scannedBarcodeValue[colorPlace-1].toString()
-        if (bagcolor == 'R'.toString()){
+        bagcolor = scannedBarcodeValue[colorPlace - 1].toString()
+        if (bagcolor == 'R'.toString()) {
             barView.setBackgroundColor(Color.RED)
         }
-        if (bagcolor == 'Y'.toString()){
+        if (bagcolor == 'Y'.toString()) {
             barView.setBackgroundColor(Color.YELLOW)
         }
-        if (bagcolor == 'B'.toString()){
+        if (bagcolor == 'B'.toString()) {
             barView.setBackgroundColor(Color.BLUE)
         }
 
@@ -342,7 +368,7 @@ class MainActivity : AppCompatActivity() {
         // clear text result
         messageBar.setText("")
         var rInt = 0
-        if (scannedBarcodeValue != "000000000000000"){
+        if (scannedBarcodeValue != "000000000000000") {
             if (checkNetworkConnection())
                 lifecycleScope.launch {
                     val result = httpPost(serverUrl)
@@ -360,8 +386,7 @@ class MainActivity : AppCompatActivity() {
                 messageBar.text = getString(R.string.nwError)
                 rInt = 0
             }
-        }
-        else{
+        } else {
             messageBar.setBackgroundColor(-0x00a000)
             messageBar.text = getString(R.string.bError)
             rInt = 0
@@ -392,12 +417,188 @@ class MainActivity : AppCompatActivity() {
         if (permission != PackageManager.PERMISSION_GRANTED) {
             setToast(getString(R.string.cameraPermissionMessage))
             camera = false
-        }
-        else
+        } else
             camera = true
 
         return camera
 
     }
 
+    private fun isBluetoothEnabled(): Boolean {
+        val btAdapter = BluetoothAdapter.getDefaultAdapter()
+        return btAdapter.isEnabled
+    }
+
+    private fun checkBluetoothPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this@MainActivity,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_DENIED ||
+            ContextCompat.checkSelfPermission(
+                this@MainActivity,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_DENIED
+        ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                ActivityCompat.requestPermissions(
+                    this@MainActivity,
+                    arrayOf(
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ),
+                    2
+                )
+                return
+            }
+        }
+    }
+
+    fun getAllDeviceAddress() {
+        val deviceStrs: ArrayList<String> = ArrayList()
+        val devices: ArrayList<String> = ArrayList()
+        val btAdapter = BluetoothAdapter.getDefaultAdapter()
+        val pairedDevices = btAdapter.bondedDevices
+        if (pairedDevices.size > 0) {
+            for (device in pairedDevices) {
+                deviceStrs.add(
+                    """
+                    ${device.name}
+                    ${device.address}
+                    """.trimIndent()
+                )
+                devices.add(device.address)
+            }
+        }
+        showDeviceSelecterDialog(deviceStrs, devices)
+    }
+
+    private fun showDeviceSelecterDialog(
+        deviceStrs: ArrayList<*>, devices: ArrayList<*>
+    ) {
+        // show list
+        val alertDialog = AlertDialog.Builder(this)
+        val adapter: ArrayAdapter<*> = ArrayAdapter(
+            this,
+            android.R.layout.select_dialog_singlechoice,
+            deviceStrs.toTypedArray()
+        )
+        alertDialog.setSingleChoiceItems(
+            adapter, -1
+        ) { dialog, which ->
+            dialog.dismiss()
+            val position = (dialog as AlertDialog)
+                .listView
+                .checkedItemPosition
+            val deviceAddress = devices[position] as String
+            bleAddress = deviceAddress
+            startConnection()
+        }
+        alertDialog.setTitle("Choose Bluetooth device")
+        alertDialog.show()
+    }
+
+    @Throws(IOException::class)
+    private fun startConnection() {
+        val remoteDevice = bleAddress
+        val LOG = "****"
+
+        if ("" == remoteDevice) {
+
+            // log error
+            Log.e(LOG, "No Bluetooth device has been selected.")
+        } else {
+            val btAdapter = BluetoothAdapter.getDefaultAdapter()
+            val dev = btAdapter.getRemoteDevice(remoteDevice)
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+            /* * Establish Bluetooth connection * */
+            Log.d(LOG, "Stopping Bluetooth discovery.")
+            btAdapter.cancelDiscovery()
+            var sock: BluetoothSocket? = null
+            try {
+                // Instantiate a BluetoothSocket for the remote
+                // device and connect it.
+                sock = dev.createRfcommSocketToServiceRecord(MY_UUID)
+
+                sock.connect()
+            } catch (e1: Exception) {
+                Log.e(
+                    "startConnection", "There was an error" +
+                            ",Falling back..", e1
+                )
+                val clazz: Class<*> = sock?.remoteDevice!!::class.java
+                val paramTypes = arrayOf<Class<*>>(Integer.TYPE)
+                try {
+                    /************Fallback method 1 */
+                    val m = clazz.getMethod(
+                        "createRfcommSocket", *paramTypes
+                    )
+                    val params = arrayOf<Any>(Integer.valueOf(1))
+                    sockFallback = m.invoke(
+                        sock.getRemoteDevice(), params
+                    ) as BluetoothSocket
+                    sockFallback!!.connect()
+                    sock = sockFallback
+                    Log.e("", "Connected")
+                } catch (e2: Exception) {
+                    Log.e("startConnection", "Stopping app..", e2)
+                    throw IOException()
+                }
+            }
+            Toast.makeText(this, "Scale connected", Toast.LENGTH_SHORT).show()
+            Log.i("BT Terminal", "connected")
+
+            mmOutputStream = sock?.getOutputStream()
+            mmInputStream = sock?.getInputStream()
+            beginListenForData()
+        }
+    }
+
+    fun beginListenForData() {
+        val handler = Handler()
+        val delimiter: Byte = 10 //This is the ASCII code for a newline character
+        stopWorker = false
+        readBufferPosition = 0
+        readBuffer = ByteArray(1024)
+        workerThread = Thread {
+            while (!Thread.currentThread().isInterrupted && !stopWorker) {
+                try {
+                    val bytesAvailable = mmInputStream!!.available()
+                    if (bytesAvailable > 0) {
+                        val packetBytes = ByteArray(bytesAvailable)
+                        mmInputStream!!.read(packetBytes)
+                        for (i in 0 until bytesAvailable) {
+                            val b = packetBytes[i]
+                            if (b == delimiter) {
+                                val encodedBytes = ByteArray(readBufferPosition)
+                                System.arraycopy(
+                                    readBuffer,
+                                    0,
+                                    encodedBytes,
+                                    0,
+                                    encodedBytes.size
+                                )
+                                val data = String(encodedBytes, charset("US-ASCII"))
+                                readBufferPosition = 0
+                                handler.post(Runnable {
+                                    Log.d("****", "$data")
+                                    weight = data
+                                })
+                            } else {
+                                readBuffer[readBufferPosition++] = b
+                            }
+                        }
+                    }
+                } catch (ex: IOException) {
+                    stopWorker = true
+                }
+            }
+        }
+        workerThread!!.start()
+    }
 }

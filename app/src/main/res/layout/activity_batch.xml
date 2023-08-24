@@ -2,9 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="10dp"
     android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:layout_margin="10dp">
+    android:orientation="vertical">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -20,31 +20,31 @@
             android:id="@+id/head_bagcolor"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:layout_weight="1"
             android:text="@string/bag_color"
             android:textAlignment="center"
-            android:layout_gravity="bottom"
             android:textSize="16sp" />
 
         <TextView
             android:id="@+id/head_bagCount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:layout_weight="1"
             android:text="@string/bagcount"
             android:textAlignment="center"
-            android:layout_gravity="bottom"
             android:textSize="16sp" />
 
         <TextView
             android:id="@+id/head_bagSum"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:layout_marginLeft="15dp"
             android:layout_weight="1"
             android:text="@string/total_weight"
             android:textAlignment="center"
-            android:layout_gravity="bottom"
             android:textSize="16sp" />
 
     </LinearLayout>
@@ -77,28 +77,57 @@
 
     </LinearLayout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_gravity="center_vertical"
-        android:layout_weight="1"
-        android:orientation="horizontal"
-        android:theme="@style/buttonTheme">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btn_delbatch"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/delete_batch"
-            android:theme="@style/buttonTheme" />
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:theme="@style/buttonTheme">
 
-        <Button
-            android:id="@+id/btn_back"
-            android:layout_width="0dp"
+            <Button
+                android:id="@+id/btn_delbatch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/delete_batch"
+                android:theme="@style/buttonTheme" />
+
+            <Button
+                android:id="@+id/btn_back"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/back"
+                android:theme="@style/buttonTheme" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/back"
-            android:theme="@style/buttonTheme" />
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:theme="@style/buttonTheme">
+
+            <Button
+                android:id="@+id/btn_connect_printer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Connect Printer"
+                android:theme="@style/buttonTheme" />
+
+            <Button
+                android:id="@+id/btn_print"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Print batch"
+                android:theme="@style/buttonTheme" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
