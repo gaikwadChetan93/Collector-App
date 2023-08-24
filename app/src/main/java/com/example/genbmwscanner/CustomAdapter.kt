@@ -22,6 +22,7 @@ class CustomAdapter(private val context: Context,
         rowView.findViewById<TextView>(R.id.row_barcode).text = dataitem["barcode"]
         rowView.findViewById<TextView>(R.id.row_weight).text = "Weight: " + dataitem["weight"]
         rowView.findViewById<TextView>(R.id.row_recordtime).text = "Date/Time: " + dataitem["recordtime"]
+        rowView.findViewById<TextView>(R.id.row_location).text = "Location: " + dataitem["location"]
 
         rowView.tag = position
         return rowView

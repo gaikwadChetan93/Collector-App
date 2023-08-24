@@ -39,7 +39,7 @@ class DetailsActivity : AppCompatActivity() {
         val recordtime = timeEditText.text.toString()
         val bagcolor = "R"
         val macid = "abcdefg"
-        dbHandler.insertRow(barcode, weight, recordtime, bagcolor, macid)
+        //dbHandler.insertRow(barcode, weight, recordtime, bagcolor, macid)
         Toast.makeText(this, getString(R.string.data_added), Toast.LENGTH_SHORT).show()
         finish()
     }

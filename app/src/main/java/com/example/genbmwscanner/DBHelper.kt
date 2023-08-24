@@ -13,7 +13,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
             "CREATE TABLE $TABLE_NAME " +
-                    "($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_1 TEXT, $COLUMN_2 TEXT, $COLUMN_3 TEXT, $COLUMN_4 TEXT, $COLUMN_5 TEXT)"
+                    "($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_1 TEXT, $COLUMN_2 TEXT, $COLUMN_3 TEXT, $COLUMN_4 TEXT, $COLUMN_5 TEXT, $LOCATION TEXT)"
         )
         db.execSQL(
             "CREATE TABLE $SETTINGS_TABLE_NAME " +
@@ -22,7 +22,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
 
         db.execSQL(
             "CREATE TABLE $BATCH_TABLE_NAME " +
-                    "($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_1 TEXT, $COLUMN_2 TEXT, $COLUMN_3 TEXT, $COLUMN_4 TEXT, $COLUMN_5 TEXT)"
+                    "($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_1 TEXT, $COLUMN_2 TEXT, $COLUMN_3 TEXT, $COLUMN_4 TEXT, $COLUMN_5 TEXT, $LOCATION TEXT)"
         )
 
         db.execSQL(
@@ -42,13 +42,21 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
         onCreate(db)
     }
 
-    fun insertRow(barcode: String, weight:String, rectime: String, bagcolor: String, macid: String) {
+    fun insertRow(
+        barcode: String,
+        weight: String,
+        rectime: String,
+        bagcolor: String,
+        macid: String,
+        location: String
+    ) {
         val values = ContentValues()
         values.put(COLUMN_1, barcode)
         values.put(COLUMN_2, weight)
         values.put(COLUMN_3, rectime)
         values.put(COLUMN_4, bagcolor)
         values.put(COLUMN_5, macid)
+        values.put(LOCATION, location)
 
         val db = this.writableDatabase
         db.insert(TABLE_NAME, null, values)
@@ -135,6 +143,7 @@ class DBHelper(context: Context, factory: SQLiteDatabase.CursorFactory?) :
         const val COLUMN_9 = "colorPlace"
         const val COLUMN_10 = "bagCount"
         const val COLUMN_11 = "bagSum"
+        const val LOCATION = "location"
     }
 
 

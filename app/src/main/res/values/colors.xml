@@ -7,4 +7,6 @@
     <color name="barcodeRedColor">#C9F61919</color>
     <color name="barcodeYellowColor">#FFEB3B</color>
     <color name="barcodeBlueColor">#7BAAFB</color>
+    <color name="selected">#FF4CAF50</color>
+    <color name="transparent">#FFFFFFFF</color>
 </resources>

@@ -31,7 +31,7 @@ public abstract class AsyncEscPosPrint extends AsyncTask<AsyncEscPosPrinter, Int
     protected ProgressDialog dialog;
     protected WeakReference<Context> weakContext;
     protected OnPrintFinished onPrintFinished;
-
+    EscPosPrinter printer;
 
     public AsyncEscPosPrint(Context context) {
         this(context, null);
@@ -58,13 +58,14 @@ public abstract class AsyncEscPosPrint extends AsyncTask<AsyncEscPosPrinter, Int
                 return new PrinterStatus(null, AsyncEscPosPrint.FINISH_NO_PRINTER);
             }
 
-            EscPosPrinter printer = new EscPosPrinter(
+             printer = new EscPosPrinter(
                     deviceConnection,
                     printerData.getPrinterDpi(),
                     printerData.getPrinterWidthMM(),
                     printerData.getPrinterNbrCharactersPerLine(),
                     new EscPosCharsetEncoding("cp437", 16)
             );
+
 
             // printer.useEscAsteriskCommand(true);
 
@@ -136,6 +137,7 @@ public abstract class AsyncEscPosPrint extends AsyncTask<AsyncEscPosPrinter, Int
     }
 
     protected void onPostExecute(PrinterStatus result) {
+        printer.disconnectPrinter();
         this.dialog.dismiss();
         this.dialog = null;
 

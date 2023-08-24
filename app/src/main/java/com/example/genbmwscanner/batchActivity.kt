@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.activity_batch.btn_connect_printer
 import kotlinx.android.synthetic.main.activity_batch.btn_delbatch
 import kotlinx.android.synthetic.main.activity_batch.btn_print
 import kotlinx.android.synthetic.main.activity_records.btn_back
+import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -52,7 +53,11 @@ class batchActivity : AppCompatActivity() {
             browseBluetoothDevice()
         }
         btn_print.setOnClickListener {
-            printBatch()
+            if (dataList.size > 0) {
+                printBatch()
+            } else {
+                Toast.makeText(this, "Batch empty", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -84,12 +89,18 @@ class batchActivity : AppCompatActivity() {
     fun getAsyncEscPosPrinter(printerConnection: DeviceConnection?): AsyncEscPosPrinter? {
         val format = SimpleDateFormat("'on' yyyy-MM-dd 'at' HH:mm:ss")
         val printer = AsyncEscPosPrinter(printerConnection, 203, 48f, 32)
+
+        val data = StringBuilder()
+        data.append(
+            "[L]<u><font size='medium'>Bag color</font></u> [C]<u><font size='medium'>Number</font></u> [R]<u><font size='medium'>weight</font></u>\n"
+        )
+        dataList.forEach {
+            data.append(
+                "[L]"+ it["bagcolor"] +" [C]"+ it["bagCount"] +" [R]"+ it["bagSum"] +"\n"
+            )
+        }
         return printer.addTextToPrint(
-            """
-            [L]
-            [C]<u><font size='big'>ORDER N°045</font></u>
-            [L]
-            """.trimIndent()
+            data.toString().trimIndent()
         )
     }
     fun loadIntoList() {

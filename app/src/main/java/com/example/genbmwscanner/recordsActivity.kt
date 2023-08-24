@@ -32,6 +32,7 @@ class recordsActivity : AppCompatActivity() {
     var scannedBarcodeValue = "000000000000000"
     var weight = ""
     var recordtime = ""
+    var locationTxt = ""
     var macid = ""
     var serverUrl = "http://www.greenearthnetwork.in/app_data.php"
 
@@ -72,6 +73,7 @@ class recordsActivity : AppCompatActivity() {
             map["barcode"] = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_1))
             map["weight"] = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_2))
             map["recordtime"] = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_3))
+            map["location"] = cursor.getString(cursor.getColumnIndex(DBHelper.LOCATION))
             dataList.add(map)
 
             cursor.moveToNext()
@@ -103,6 +105,7 @@ class recordsActivity : AppCompatActivity() {
             scannedBarcodeValue = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_1))
             weight = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_2))
             recordtime = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_3))
+            locationTxt = cursor.getString(cursor.getColumnIndex(DBHelper.LOCATION))
             dataList.add(map)
             var syncResult = send()
             if (syncResult == 0) {
@@ -141,6 +144,7 @@ class recordsActivity : AppCompatActivity() {
         jsonObject.accumulate("weight", weight)
         jsonObject.accumulate("recordtime", recordtime)
         jsonObject.accumulate("macid", macid)
+        jsonObject.accumulate("location", locationTxt)
 
         return jsonObject
     }

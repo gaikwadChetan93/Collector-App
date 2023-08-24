@@ -12,14 +12,20 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.icu.text.SimpleDateFormat
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View.OnFocusChangeListener
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -50,7 +56,10 @@ import java.net.URL
 import java.util.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), LocationListener {
+    private lateinit var latitude: String
+    private lateinit var longitude: String
+    private val locationPermissionCode: Int = 1001
     private val dbHandler = DBHelper(this, null)
     var scannedBarcodeValue = "000000000000000"
     var weight = "0.000"
@@ -83,12 +92,39 @@ class MainActivity : AppCompatActivity() {
     @Volatile
     var stopWorker = false
     lateinit var vKG:EditText
+    lateinit var locationTxt:TextView
+    private lateinit var locationManager: LocationManager
+    lateinit var barView: EditText
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            locationPermissionCode -> {
+                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    getLocation()
+                } else {
+                    // permission is denied, you can ask for permission again, if you want
+                    //  askForPermissions()
+                }
+                return
+            }
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        checkBluetoothPermission()
-
+        getLocation()
+        barView = findViewById(R.id.barcodeValue)
+        findViewById<Button>(R.id.btn_clear).setOnClickListener {
+            barView.requestFocus()
+            barView.setText("")
+            barView.setBackgroundColor(Color.TRANSPARENT)
+        }
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -99,6 +135,7 @@ class MainActivity : AppCompatActivity() {
         val messageBar = findViewById<TextView>(R.id.messageBar)
 
          vKG = findViewById<EditText>(R.id.kg_number)
+        locationTxt = findViewById(R.id.location)
 
         findViewById<Button>(R.id.btn_Scale).setOnClickListener {
             getAllDeviceAddress()
@@ -115,15 +152,27 @@ class MainActivity : AppCompatActivity() {
         macid = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_7))
         bsize = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_8)).toInt()
         colorPlace = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_9)).toInt()
+        barView.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
 
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if (p0?.length == bsize) {
+                    displayBarcode(barView.text.toString(),false)
+                }
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+            }
+
+        })
         btn_scan.setOnClickListener {
             if (setupPermissions()) {
                 val scanner = IntentIntegrator(this)
                 scanner.setPrompt(getString(R.string.setBarcodeWindow))
                 scanner.initiateScan()
             } else {
-                popMessage = getString(R.string.cameraPermissionMessage)
-                setToast(popMessage)
+                checkBluetoothPermission()
             }
         }
 
@@ -148,7 +197,8 @@ class MainActivity : AppCompatActivity() {
                     weight,
                     recordtime,
                     bagcolor,
-                    macid
+                    macid,
+                    "$latitude,$longitude"
                 )
 
                 var sendStat = send()
@@ -184,6 +234,7 @@ class MainActivity : AppCompatActivity() {
          }*/
         btn_list_records.setOnClickListener {
             val intent = Intent(this, recordsActivity::class.java)
+            intent.putExtra("location_extra", "$latitude,$longitude")
             startActivity(intent)
         }
 
@@ -244,6 +295,44 @@ class MainActivity : AppCompatActivity() {
         */
     }
 
+    private fun getLocation() {
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        if ((ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED)
+        ) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5f, this)
+        } else {
+            ActivityCompat.requestPermissions(
+                this@MainActivity,
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_ADMIN,
+                    Manifest.permission.BLUETOOTH,
+                ),
+                locationPermissionCode
+            )
+        }
+        Log.d("Location Service", "Getting Location")
+    }
+
+
+    override fun onLocationChanged(location: Location) {
+        latitude = location.latitude.toString()
+        longitude = location.longitude.toString()
+        Log.d(
+            "Location Service",
+            "Latitude:" + location.latitude.toDouble() + " Longitude:" + location.longitude.toString()
+        )
+        locationTxt.text = "Latitude:" + location.latitude.toDouble() + " \nLongitude:" + location.longitude.toString()
+        //latitudebox.text = latitude
+        //longitudebox.text = longitude
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.setting_menu, menu)
         return true
@@ -276,12 +365,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun displayBarcode(barcode: String) {
+    private fun displayBarcode(barcode: String, shouldSet: Boolean = true) {
         vKG.setText(weight)
-        val barView = findViewById(R.id.barcodeValue) as TextView
         scannedBarcodeValue = barcode.toString()
-        barView.text = scannedBarcodeValue
+        if (shouldSet) {
+            barView.setText(scannedBarcodeValue)
+        }
         bagcolor = scannedBarcodeValue[colorPlace - 1].toString()
+        Log.d("****", "$bagcolor")
         if (bagcolor == 'R'.toString()) {
             barView.setBackgroundColor(Color.RED)
         }
@@ -415,7 +506,6 @@ class MainActivity : AppCompatActivity() {
         )
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
-            setToast(getString(R.string.cameraPermissionMessage))
             camera = false
         } else
             camera = true
@@ -432,19 +522,14 @@ class MainActivity : AppCompatActivity() {
     private fun checkBluetoothPermission() {
         if (ContextCompat.checkSelfPermission(
                 this@MainActivity,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_DENIED ||
-            ContextCompat.checkSelfPermission(
-                this@MainActivity,
-                Manifest.permission.BLUETOOTH_SCAN
+                Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_DENIED
         ) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 ActivityCompat.requestPermissions(
                     this@MainActivity,
                     arrayOf(
-                        Manifest.permission.BLUETOOTH_CONNECT,
-                        Manifest.permission.BLUETOOTH_SCAN
+                        Manifest.permission.CAMERA
                     ),
                     2
                 )
