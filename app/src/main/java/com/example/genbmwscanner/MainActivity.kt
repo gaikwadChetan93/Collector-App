@@ -25,7 +25,6 @@ import android.util.Log
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View.OnFocusChangeListener
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -73,21 +72,19 @@ class MainActivity : AppCompatActivity(), LocationListener {
     var serverUrl = "https://aurangabad.greenearthnetwork.in/app_data.php"
     private val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
     private val dev: BluetoothDevice? = null
-    private var sockFallback: BluetoothSocket? = null
+    private lateinit var sockFallback: BluetoothSocket
     //var serverUrl = "https://doctors2.envirovigil.org/app_data.php"
     var popMessage = "Ready"
     var camera: Boolean = false
     lateinit var bleAddress: String
 
-    var mBluetoothAdapter: BluetoothAdapter? = null
-    var mmSocket: BluetoothSocket? = null
-    var mmDevice: BluetoothDevice? = null
     var mmOutputStream: OutputStream? = null
     var mmInputStream: InputStream? = null
     var workerThread: Thread? = null
     lateinit var readBuffer: ByteArray
     var readBufferPosition = 0
     var counter = 0
+    lateinit var scaleStatus: TextView
 
     @Volatile
     var stopWorker = false
@@ -95,6 +92,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     lateinit var locationTxt:TextView
     private lateinit var locationManager: LocationManager
     lateinit var barView: EditText
+    lateinit var sock: BluetoothSocket
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -120,10 +118,11 @@ class MainActivity : AppCompatActivity(), LocationListener {
         setContentView(R.layout.activity_main)
         getLocation()
         barView = findViewById(R.id.barcodeValue)
+        scaleStatus = findViewById(R.id.scaleStatus)
+        vKG = findViewById<EditText>(R.id.kg_number)
+
         findViewById<Button>(R.id.btn_clear).setOnClickListener {
-            barView.requestFocus()
-            barView.setText("")
-            barView.setBackgroundColor(Color.TRANSPARENT)
+            setDefault()
         }
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -134,7 +133,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         val messageBar = findViewById<TextView>(R.id.messageBar)
 
-         vKG = findViewById<EditText>(R.id.kg_number)
         locationTxt = findViewById(R.id.location)
 
         findViewById<Button>(R.id.btn_Scale).setOnClickListener {
@@ -210,7 +208,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             } else {
                 popMessage = getString(R.string.scan_first)
             }
-            vKG.setText("")
+            setDefault()
             //displayBarcode("000000000000000");
             setToast(popMessage)
         }
@@ -241,7 +239,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         btn_list_batch.setOnClickListener {
             val intent = Intent(this, batchActivity::class.java)
             startActivity(intent)
-            finish()
+            //finish()
         }
 
         //val sdf = SimpleDateFormat("dd/M/yyyy hh:mm:ss")
@@ -295,6 +293,13 @@ class MainActivity : AppCompatActivity(), LocationListener {
         */
     }
 
+    private fun setDefault() {
+        barView.requestFocus()
+        barView.setText("")
+        vKG.setText("")
+        barView.setBackgroundColor(resources.getColor(R.color.colorAccent))
+    }
+
     private fun getLocation() {
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         if ((ContextCompat.checkSelfPermission(
@@ -321,16 +326,25 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
 
+    override fun onResume() {
+        super.onResume()
+        if (this::sock.isInitialized) {
+            Log.d("****", "sock.isConnected ${sock.isConnected}")
+            if (sock.isConnected) {
+                scaleStatus.setText("Scale connected")
+            } else {
+                scaleStatus.setText("Scale disconnected")
+            }
+        }
+    }
     override fun onLocationChanged(location: Location) {
-        latitude = location.latitude.toString()
-        longitude = location.longitude.toString()
+        latitude = String.format("%.6f", location.latitude)
+        longitude = String.format("%.6f", location.longitude)
         Log.d(
             "Location Service",
             "Latitude:" + location.latitude.toDouble() + " Longitude:" + location.longitude.toString()
         )
-        locationTxt.text = "Latitude:" + location.latitude.toDouble() + " \nLongitude:" + location.longitude.toString()
-        //latitudebox.text = latitude
-        //longitudebox.text = longitude
+        locationTxt.text = "Latitude:" + latitude + " \nLongitude:" + latitude
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -604,12 +618,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
             /* * Establish Bluetooth connection * */
             Log.d(LOG, "Stopping Bluetooth discovery.")
             btAdapter.cancelDiscovery()
-            var sock: BluetoothSocket? = null
             try {
                 // Instantiate a BluetoothSocket for the remote
                 // device and connect it.
                 sock = dev.createRfcommSocketToServiceRecord(MY_UUID)
-
                 sock.connect()
             } catch (e1: Exception) {
                 Log.e(
@@ -637,6 +649,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
             Toast.makeText(this, "Scale connected", Toast.LENGTH_SHORT).show()
             Log.i("BT Terminal", "connected")
+            scaleStatus.setText("Scale connected")
 
             mmOutputStream = sock?.getOutputStream()
             mmInputStream = sock?.getInputStream()
@@ -685,5 +698,18 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
         }
         workerThread!!.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        closeBT()
+    }
+    @Throws(IOException::class)
+    fun closeBT() {
+        stopWorker = true
+        mmOutputStream!!.close()
+        mmInputStream!!.close()
+        sock.close()
+        scaleStatus.setText("Scale disconnected")
     }
 }

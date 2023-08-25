@@ -28,7 +28,8 @@
             android:hint="00.000"
             android:selectAllOnFocus="true"
             android:textAlignment="center"
-            android:textSize="26sp"/>
+            android:textSize="26sp"
+            android:background="@color/colorAccent"/>
 
         <Button
             android:id="@+id/btn_scan"
@@ -135,13 +136,25 @@
         </LinearLayout>-->
         <!--endregion-->
         <TextView
+            android:id="@+id/scaleStatus"
+            android:layout_width="300dp"
+            android:layout_height="35dp"
+            android:layout_above="@id/messageBar"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            android:text="Scale disconnected"
+            android:textAlignment="center"
+            android:textSize="25sp" />
+
+        <TextView
             android:id="@+id/messageBar"
             android:layout_width="300dp"
             android:layout_height="35dp"
             android:layout_alignParentBottom="true"
             android:layout_centerInParent="true"
             android:layout_marginTop="5dp"
-            android:layout_marginBottom="30dp"
+            android:layout_marginBottom="10dp"
             android:text="@string/barcode_label"
             android:textAlignment="center"
             android:textSize="25sp" />
