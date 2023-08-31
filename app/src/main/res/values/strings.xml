@@ -37,4 +37,6 @@
     <string name="nwError">Network Error -- Check Network Settings</string>
     <string name="deleteAllMessage">All records deleted</string>
     <string name="bError">Please ckeck barcode value</string>
+    <string name="bluetooth_state">bluetooth_state</string>
+    <string name="bluetooth_status">bluetooth_status</string>
 </resources>

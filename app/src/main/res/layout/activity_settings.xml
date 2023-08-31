@@ -102,12 +102,14 @@
             android:orientation="vertical">
 
             <Button
-                android:id="@+id/btnDeleteAll"
-                android:layout_width="200dp"
+                android:id="@+id/btnSettingsUpdate"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="deleterecords"
-                android:text="@string/deleteAll_label"
+                android:layout_weight="1"
+                android:onClick="update"
+                android:text="@string/update"
                 android:theme="@style/buttonTheme" />
+
         </LinearLayout>
 
     </LinearLayout>
@@ -119,19 +121,20 @@
         android:orientation="horizontal"
         android:theme="@style/buttonTheme">
 
+
         <Button
-            android:id="@+id/btnSettingsUpdate"
+            android:id="@+id/btnDeleteAll"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:onClick="deleterecords"
             android:layout_weight="1"
-            android:onClick="update"
-            android:text="@string/update"
+            android:text="@string/deleteAll_label"
             android:theme="@style/buttonTheme" />
 
         <Button
             android:id="@+id/btn_back"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/back"
             android:theme="@style/buttonTheme" />

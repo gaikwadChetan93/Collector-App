@@ -5,10 +5,12 @@ package com.example.genbmwscanner
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothSocket
+import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.icu.text.SimpleDateFormat
@@ -18,7 +20,7 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
+import android.os.IBinder
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -47,8 +49,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -70,29 +70,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     //var serverUrl = "https://www.greenearthnetwork.in/app_data.php"
     var serverUrl = "https://aurangabad.greenearthnetwork.in/app_data.php"
-    private val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-    private val dev: BluetoothDevice? = null
-    private lateinit var sockFallback: BluetoothSocket
+
+
     //var serverUrl = "https://doctors2.envirovigil.org/app_data.php"
     var popMessage = "Ready"
     var camera: Boolean = false
     lateinit var bleAddress: String
+    val bluetoothStateListener = BluetoothStateListener()
 
-    var mmOutputStream: OutputStream? = null
-    var mmInputStream: InputStream? = null
-    var workerThread: Thread? = null
-    lateinit var readBuffer: ByteArray
-    var readBufferPosition = 0
-    var counter = 0
+
     lateinit var scaleStatus: TextView
+    private lateinit var mService: BluetoothScaleService
+    private var mBound: Boolean = false
 
-    @Volatile
-    var stopWorker = false
-    lateinit var vKG:EditText
-    lateinit var locationTxt:TextView
+
+    lateinit var vKG: EditText
+    lateinit var locationTxt: TextView
     private lateinit var locationManager: LocationManager
     lateinit var barView: EditText
-    lateinit var sock: BluetoothSocket
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -112,6 +107,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             }
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,7 +152,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 if (p0?.length == bsize) {
-                    displayBarcode(barView.text.toString(),false)
+                    displayBarcode(barView.text.toString(), false)
                 }
             }
 
@@ -170,7 +166,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 scanner.setPrompt(getString(R.string.setBarcodeWindow))
                 scanner.initiateScan()
             } else {
-                checkBluetoothPermission()
+                manageCameraPermission()
             }
         }
 
@@ -325,18 +321,6 @@ class MainActivity : AppCompatActivity(), LocationListener {
         Log.d("Location Service", "Getting Location")
     }
 
-
-    override fun onResume() {
-        super.onResume()
-        if (this::sock.isInitialized) {
-            Log.d("****", "sock.isConnected ${sock.isConnected}")
-            if (sock.isConnected) {
-                scaleStatus.setText("Scale connected")
-            } else {
-                scaleStatus.setText("Scale disconnected")
-            }
-        }
-    }
     override fun onLocationChanged(location: Location) {
         latitude = String.format("%.6f", location.latitude)
         longitude = String.format("%.6f", location.longitude)
@@ -533,22 +517,20 @@ class MainActivity : AppCompatActivity(), LocationListener {
         return btAdapter.isEnabled
     }
 
-    private fun checkBluetoothPermission() {
+    private fun manageCameraPermission() {
         if (ContextCompat.checkSelfPermission(
                 this@MainActivity,
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_DENIED
         ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                ActivityCompat.requestPermissions(
-                    this@MainActivity,
-                    arrayOf(
-                        Manifest.permission.CAMERA
-                    ),
-                    2
-                )
-                return
-            }
+            ActivityCompat.requestPermissions(
+                this@MainActivity,
+                arrayOf(
+                    Manifest.permission.CAMERA
+                ),
+                2
+            )
+            return
         }
     }
 
@@ -590,126 +572,59 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 .checkedItemPosition
             val deviceAddress = devices[position] as String
             bleAddress = deviceAddress
-            startConnection()
+            if (!mBound) {
+                Intent(this, BluetoothScaleService::class.java).also { intent ->
+                    intent.putExtra("ble_address", bleAddress)
+                    bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                }
+            } else {
+                mService.bleAddress = bleAddress
+                try {
+                    mService.startConnection()
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+                Toast.makeText(this, "Scale already connected", Toast.LENGTH_SHORT).show()
+            }
         }
         alertDialog.setTitle("Choose Bluetooth device")
         alertDialog.show()
     }
 
-    @Throws(IOException::class)
-    private fun startConnection() {
-        val remoteDevice = bleAddress
-        val LOG = "****"
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(bluetoothStateListener, IntentFilter(getString(R.string.bluetooth_state)));  //<----Register
+    }
 
-        if ("" == remoteDevice) {
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(bluetoothStateListener)
+    }
 
-            // log error
-            Log.e(LOG, "No Bluetooth device has been selected.")
-        } else {
-            val btAdapter = BluetoothAdapter.getDefaultAdapter()
-            val dev = btAdapter.getRemoteDevice(remoteDevice)
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            }
-            /* * Establish Bluetooth connection * */
-            Log.d(LOG, "Stopping Bluetooth discovery.")
-            btAdapter.cancelDiscovery()
-            try {
-                // Instantiate a BluetoothSocket for the remote
-                // device and connect it.
-                sock = dev.createRfcommSocketToServiceRecord(MY_UUID)
-                sock.connect()
-            } catch (e1: Exception) {
-                Log.e(
-                    "startConnection", "There was an error" +
-                            ",Falling back..", e1
-                )
-                val clazz: Class<*> = sock?.remoteDevice!!::class.java
-                val paramTypes = arrayOf<Class<*>>(Integer.TYPE)
-                try {
-                    /************Fallback method 1 */
-                    val m = clazz.getMethod(
-                        "createRfcommSocket", *paramTypes
-                    )
-                    val params = arrayOf<Any>(Integer.valueOf(1))
-                    sockFallback = m.invoke(
-                        sock.getRemoteDevice(), params
-                    ) as BluetoothSocket
-                    sockFallback!!.connect()
-                    sock = sockFallback
-                    Log.e("", "Connected")
-                } catch (e2: Exception) {
-                    Log.e("startConnection", "Stopping app..", e2)
-                    throw IOException()
-                }
-            }
-            Toast.makeText(this, "Scale connected", Toast.LENGTH_SHORT).show()
-            Log.i("BT Terminal", "connected")
-            scaleStatus.setText("Scale connected")
+    private val connection = object : ServiceConnection {
 
-            mmOutputStream = sock?.getOutputStream()
-            mmInputStream = sock?.getInputStream()
-            beginListenForData()
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance.
+            val binder = service as BluetoothScaleService.BluetoothScaleBinder
+            mService = binder.getService()
+            mBound = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            Log.d("****", "Service stopped")
+            mBound = false
         }
     }
 
-    fun beginListenForData() {
-        val handler = Handler()
-        val delimiter: Byte = 10 //This is the ASCII code for a newline character
-        stopWorker = false
-        readBufferPosition = 0
-        readBuffer = ByteArray(1024)
-        workerThread = Thread {
-            while (!Thread.currentThread().isInterrupted && !stopWorker) {
-                try {
-                    val bytesAvailable = mmInputStream!!.available()
-                    if (bytesAvailable > 0) {
-                        val packetBytes = ByteArray(bytesAvailable)
-                        mmInputStream!!.read(packetBytes)
-                        for (i in 0 until bytesAvailable) {
-                            val b = packetBytes[i]
-                            if (b == delimiter) {
-                                val encodedBytes = ByteArray(readBufferPosition)
-                                System.arraycopy(
-                                    readBuffer,
-                                    0,
-                                    encodedBytes,
-                                    0,
-                                    encodedBytes.size
-                                )
-                                val data = String(encodedBytes, charset("US-ASCII"))
-                                readBufferPosition = 0
-                                handler.post(Runnable {
-                                    Log.d("****", "$data")
-                                    weight = data
-                                })
-                            } else {
-                                readBuffer[readBufferPosition++] = b
-                            }
-                        }
-                    }
-                } catch (ex: IOException) {
-                    stopWorker = true
+    class BluetoothStateListener : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == context.getString(R.string.bluetooth_state)) {
+                val connected = intent.getBooleanExtra(context.getString(R.string.bluetooth_status), false)
+                Log.d("****", "Received connection status $connected")
+                if (!connected) {
+
                 }
             }
         }
-        workerThread!!.start()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        closeBT()
-    }
-    @Throws(IOException::class)
-    fun closeBT() {
-        stopWorker = true
-        mmOutputStream!!.close()
-        mmInputStream!!.close()
-        sock.close()
-        scaleStatus.setText("Scale disconnected")
     }
 }
