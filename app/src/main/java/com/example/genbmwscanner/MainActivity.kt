@@ -132,7 +132,24 @@ class MainActivity : AppCompatActivity(), LocationListener {
         locationTxt = findViewById(R.id.location)
 
         findViewById<Button>(R.id.btn_Scale).setOnClickListener {
-            getAllDeviceAddress()
+            val bleAddress = SharedPrefUtils.getStringData(this, SharedPrefUtils.BLUETOOTH_ID)
+            if (bleAddress == null) {
+                Toast.makeText(this, "Please select scale from settings", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (!mBound) {
+                Intent(this, BluetoothScaleService::class.java).also { intent ->
+                    intent.putExtra("ble_address", bleAddress)
+                    bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                }
+            } else {
+                mService.bleAddress = bleAddress
+                try {
+                    mService.startConnection()
+                } catch (e: java.lang.Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
         //Connect to the database
         val cursor = dbHandler.getSettings()

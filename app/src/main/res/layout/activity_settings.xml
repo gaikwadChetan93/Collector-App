@@ -94,6 +94,16 @@
                 android:hint="Place of Color Character"
                 android:inputType="number"
                 android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/scale"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:hint="Please select scale >"
+                android:inputType="number"
+                android:textSize="20sp"
+                android:padding="12dp"/>
         </LinearLayout>
 
         <LinearLayout
