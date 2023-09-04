@@ -55,7 +55,7 @@ import java.net.URL
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), LocationListener {
+class MainActivity : AppCompatActivity(), LocationListener, BleStatusCallback {
     private lateinit var latitude: String
     private lateinit var longitude: String
     private val locationPermissionCode: Int = 1001
@@ -76,7 +76,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
     var popMessage = "Ready"
     var camera: Boolean = false
     lateinit var bleAddress: String
-    val bluetoothStateListener = BluetoothStateListener()
+
+    val bluetoothStateListener = BluetoothStateListener(this)
 
 
     lateinit var scaleStatus: TextView
@@ -137,17 +138,22 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 Toast.makeText(this, "Please select scale from settings", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
             if (!mBound) {
                 Intent(this, BluetoothScaleService::class.java).also { intent ->
                     intent.putExtra("ble_address", bleAddress)
                     bindService(intent, connection, Context.BIND_AUTO_CREATE)
                 }
             } else {
-                mService.bleAddress = bleAddress
-                try {
-                    mService.startConnection()
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
+                if (!mService.stopWorker) {
+                    Toast.makeText(this, "Scale already connected", Toast.LENGTH_SHORT).show()
+                } else {
+                    mService.bleAddress = bleAddress
+                    try {
+                        mService.startConnection()
+                    } catch (e: java.lang.Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }
@@ -381,7 +387,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun displayBarcode(barcode: String, shouldSet: Boolean = true) {
-        vKG.setText(weight)
+        vKG.setText(mService.currentWeight)
         scannedBarcodeValue = barcode.toString()
         if (shouldSet) {
             barView.setText(scannedBarcodeValue)
@@ -633,15 +639,28 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
     }
 
-    class BluetoothStateListener : BroadcastReceiver() {
+    class BluetoothStateListener(
+        val bleStatusCallback: BleStatusCallback
+    ) : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == context.getString(R.string.bluetooth_state)) {
                 val connected = intent.getBooleanExtra(context.getString(R.string.bluetooth_status), false)
                 Log.d("****", "Received connection status $connected")
-                if (!connected) {
 
+                if (connected) {
+                    bleStatusCallback.onState("Scale connected")
+                } else {
+                    bleStatusCallback.onState("Scale disConnected")
                 }
             }
         }
     }
+
+    override fun onState(state: String) {
+        scaleStatus.text = state
+    }
+}
+
+interface BleStatusCallback{
+    fun onState(state: String)
 }

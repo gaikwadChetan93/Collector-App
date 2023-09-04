@@ -47,6 +47,9 @@ class BluetoothScaleService : Service() {
     val randomNumber: Int
         get() = mGenerator.nextInt(100)
 
+    val currentWeight: String
+        get() = weight.trim().toFloat().div(1000).toString()
+
     /**
      * Class used for the client Binder. Because we know this service always
      * runs in the same process as its clients, we don't need to deal with IPC.
@@ -160,7 +163,7 @@ class BluetoothScaleService : Service() {
                                 readBufferPosition = 0
                                 handler.post(Runnable {
                                     Log.d("****", "$data")
-                                    weight = data.toInt().div(1000).toString()
+                                    weight = data
                                 })
                             } else {
                                 readBuffer[readBufferPosition++] = b

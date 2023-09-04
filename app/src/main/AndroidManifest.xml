@@ -27,14 +27,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".batchActivity"></activity>
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".DetailsActivity" />
-        <activity android:name=".recordsActivity" />
+        <activity android:name=".batchActivity"
+            android:exported="false"/>
+        <activity android:name=".SettingsActivity"
+            android:exported="false"/>
+        <activity android:name=".DetailsActivity"
+            android:exported="false"/>
+        <activity android:name=".recordsActivity"
+            android:exported="false"/>
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="fullSensor"
-            tools:replace="screenOrientation" />
+            tools:replace="screenOrientation"
+            android:exported="false"/>
         <activity android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -45,7 +50,8 @@
         </activity>
         <service
             android:enabled="true"
-            android:name=".BluetoothScaleService">
+            android:name=".BluetoothScaleService"
+            android:exported="false">
         </service>
     </application>
 
