@@ -387,6 +387,7 @@ class MainActivity : AppCompatActivity(), LocationListener, BleStatusCallback {
     }
 
     private fun displayBarcode(barcode: String, shouldSet: Boolean = true) {
+        if (!this::mService.isInitialized) return
         vKG.setText(mService.currentWeight)
         scannedBarcodeValue = barcode.toString()
         if (shouldSet) {
@@ -613,7 +614,6 @@ class MainActivity : AppCompatActivity(), LocationListener, BleStatusCallback {
         alertDialog.setTitle("Choose Bluetooth device")
         alertDialog.show()
     }
-
     override fun onResume() {
         super.onResume()
         registerReceiver(bluetoothStateListener, IntentFilter(getString(R.string.bluetooth_state)));  //<----Register
