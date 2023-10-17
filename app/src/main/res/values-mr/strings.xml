@@ -11,7 +11,7 @@
     <string name="total_weight">एकूण वजन</string>
     <string name="deleteAll_label">सर्व रेकॉर्ड हटवा</string>
     <string name="weight_label" translatable="false">वजन प्रविष्ट करा</string>
-    <string name="list_records">रेकॉर्ड दर्शवा</string>
+    <string name="list_records">रेकॉर्ड दाखवा</string>
     <string name="list_batch">बॅच दाखवा</string>
     <string name="weight_hint">वजन प्रविष्ट करा</string>
     <string name="submit">रेकॉर्ड सबमिट करा</string>
@@ -33,4 +33,14 @@
     <string name="nwError">नेटवर्क त्रुटी - नेटवर्क सेटिंग्ज तपासा</string>
     <string name="deleteAllMessage">सर्व रेकॉर्ड हटविली</string>
     <string name="deleteBatchMessage">बॅच हटविला</string>
+    <string name="bError">कृपया बारकोड मूल्य तपासा</string>
+    <string name="bluetooth_state">bluetooth_state</string>
+    <string name="bluetooth_status">bluetooth_status</string>
+    <string name="scale_connected">वजन काटा कनेक्ट झाला</string>
+    <string name="scale_disconnected">वजन काटा डिस्कनेक्ट झाला</string>
+    <string name="conect_scale">वजन काटा कनेक्ट करा</string>
+    <string name="clear">क्लिअर करा</string>
+    <string name="connect_printer">प्रिंटर कनेक्ट करा</string>
+    <string name="print_batch">प्रिंट बॅच</string>
+    <string name="please_select_scale">वजन काटा निवडा></string>
 </resources>

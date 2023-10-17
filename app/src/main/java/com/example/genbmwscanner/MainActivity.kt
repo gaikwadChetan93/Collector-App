@@ -113,6 +113,8 @@ class MainActivity : AppCompatActivity(), LocationListener, BleStatusCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        latitude = 0.0.toString()
+        longitude = 0.0.toString()
         getLocation()
         barView = findViewById(R.id.barcodeValue)
         scaleStatus = findViewById(R.id.scaleStatus)
@@ -387,8 +389,9 @@ class MainActivity : AppCompatActivity(), LocationListener, BleStatusCallback {
     }
 
     private fun displayBarcode(barcode: String, shouldSet: Boolean = true) {
-        if (!this::mService.isInitialized) return
-        vKG.setText(mService.currentWeight)
+        if (this::mService.isInitialized) {
+            vKG.setText(mService.currentWeight)
+        }
         scannedBarcodeValue = barcode.toString()
         if (shouldSet) {
             barView.setText(scannedBarcodeValue)
@@ -617,6 +620,11 @@ class MainActivity : AppCompatActivity(), LocationListener, BleStatusCallback {
     override fun onResume() {
         super.onResume()
         registerReceiver(bluetoothStateListener, IntentFilter(getString(R.string.bluetooth_state)));  //<----Register
+        if (mBound) {
+            scaleStatus.text = getString(R.string.scale_connected)
+        } else {
+            scaleStatus.text = getString(R.string.scale_disconnected)
+        }
     }
 
     override fun onPause() {
@@ -648,9 +656,9 @@ class MainActivity : AppCompatActivity(), LocationListener, BleStatusCallback {
                 Log.d("****", "Received connection status $connected")
 
                 if (connected) {
-                    bleStatusCallback.onState("Scale connected")
+                    bleStatusCallback.onState(context.getString(R.string.scale_connected))
                 } else {
-                    bleStatusCallback.onState("Scale disConnected")
+                    bleStatusCallback.onState(context.getString(R.string.scale_disconnected))
                 }
             }
         }

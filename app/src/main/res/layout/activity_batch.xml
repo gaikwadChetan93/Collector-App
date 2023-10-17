@@ -118,7 +118,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Connect Printer"
+                android:text="@string/connect_printer"
                 android:theme="@style/buttonTheme" />
 
             <Button
@@ -126,7 +126,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Print batch"
+                android:text="@string/print_batch"
                 android:theme="@style/buttonTheme" />
         </LinearLayout>
     </LinearLayout>

@@ -36,7 +36,13 @@
     <string name="appExpired">BMW Barcode Scanner app has expired</string>
     <string name="nwError">Network Error -- Check Network Settings</string>
     <string name="deleteAllMessage">All records deleted</string>
-    <string name="bError">Please ckeck barcode value</string>
+    <string name="bError">Please check barcode value</string>
     <string name="bluetooth_state">bluetooth_state</string>
     <string name="bluetooth_status">bluetooth_status</string>
+    <string name="scale_connected">Scale connected</string>
+    <string name="scale_disconnected">Scale disconnected</string>
+    <string name="clear">Clear</string>
+    <string name="connect_printer">Connect Prn</string>
+    <string name="print_batch">Print batch</string>
+    <string name="please_select_scale">Please select scale ></string>
 </resources>
